@@ -6,7 +6,7 @@ import requests
 api_url = "https://api.etherscan.io/api" # 5 calls per sec, 100k calls per day
 
 continue_loop = True
-start_block = 12417067 # first block involving Lido
+start_block = 11480180 # first block involving Lido
 
 params = {
     'module': 'proxy',
