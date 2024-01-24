@@ -18,7 +18,6 @@ response = requests.get(api_url, params=params)
 data = response.json()
 newest_block = int(data['result'], 16)
 
-
 while continue_loop:
     # Define the parameters
     params = {
