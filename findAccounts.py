@@ -1,7 +1,6 @@
 import requests
 from config import API_KEY
 
-import requests
 # Define the API endpoint
 api_url = "https://api.etherscan.io/api" # 5 calls per sec, 100k calls per day
 
