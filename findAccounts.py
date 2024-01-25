@@ -1,80 +1,63 @@
+# for each operator, get the list of added validators
 import requests
+from eth_abi import decode, encode
+import sha3
 from config import API_KEY
 
-# Define the API endpoint
-api_url = "https://api.etherscan.io/api" # 5 calls per sec, 100k calls per day
+api_url = "https://api.etherscan.io/api" 
+contract_address = "0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5"
 
-continue_loop = True
-start_block = 11480180 # first block involving Lido
+#-------------------------------------
+# getActiveNodeOperatorsCount()
+#-------------------------------------
+def get_number_of_operators(api_url, contract_address, API_KEY):
+    k = sha3.keccak_256()
+    k.update(b"getActiveNodeOperatorsCount()")
+    getActiveNodeOperatorsCount = "0x" + k.hexdigest()
 
-params = {
-    'module': 'proxy',
-    'action': 'eth_blockNumber',
-    'apikey': API_KEY
-}
-
-response = requests.get(api_url, params=params)
-data = response.json()
-newest_block = int(data['result'], 16)
-
-while continue_loop:
-    # Define the parameters
     params = {
-        'module': 'account',
-        'action': 'txlist',
-        'address': '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
-        'startblock': start_block, 
-        'endblock': 'latest', 
-        'apikey': API_KEY  
+        'module': 'proxy',
+        'action': 'eth_call',
+        'to': contract_address,
+        'data': getActiveNodeOperatorsCount,
+        'apikey': API_KEY
     }
-
-    # Make the API call
     response = requests.get(api_url, params=params)
-
-    # Check the response
     if response.status_code == 200:
         data = response.json()
-        print(data)
+        numberOfOperators = int(data['result'], 16)
+        print ("numberOfOperators: " + str(numberOfOperators))
+        return numberOfOperators
     else:
         print(f"Error: {response.status_code} - {response.text}")
+        return None
+    
+#-------------------------------------
+# getActiveNodeOperator(uint256,bool)
+#-------------------------------------
+def get_node_operator(api_url, contract_address, API_KEY, operator_id):
+    k = sha3.keccak_256()
+    k.update(b"getNodeOperator(uint256,bool)")
+    getNodeOperator = "0x" + k.hexdigest()[:8]
 
-    lastBlock = None
-    firstBlock = None
-    list = []
-    for i in data['result']:
-        m = i["methodId"]
-        a = i["from"]
-        firstBlock = data['result'][0]["blockNumber"]
-        b = i["blockNumber"]
-        # print (blocknum, m, a)
-        if m == "0xa1903eab": # submit methodID
-            list.append([m, a, b]) # methodID, address, blockNumber
-        lastBlock = int(b)
-
-    step = lastBlock - int(firstBlock)
-    start_block = lastBlock + step
-
-    print (list)
-    print ("first block in loop: " + str(firstBlock))
-    print ("last block in loop: " + str(lastBlock))
-    print ("loop range: " + str(step))
-    print ("number of tx found: " + str(len(list))) 
-    print ("starting next loop at " + str(start_block))
-    print ("searching until block: " + str(newest_block))
-
-    if int(start_block) > newest_block:
-        continue_loop = False
-    else:
-        continue_loop = True
+    params_encoded = encode(['uint256', 'bool'], [operator_id, True]).hex()
+    getNodeOperator += params_encoded
 
     params = {
-        'module': 'account',
-        'action': 'txlist',
-        'address': '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
-        'startblock': start_block, # first block involving Lido
-        'endblock': 'latest', 
-        'apikey': API_KEY  
+        'module': 'proxy',
+        'action': 'eth_call',
+        'to': contract_address,
+        'data': getNodeOperator,
+        'apikey': API_KEY
     }
-
-
-
+    response = requests.get(api_url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        abi = ["bool","string","address","uint256","uint256","uint256","uint256"]
+        hex_string = data['result'][2:]
+        decoded_data = decode(abi, bytes.fromhex(hex_string))
+        print ("get_node_operator " + str(operator_id) + ":" + str(decoded_data))
+        return decoded_data
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return None
