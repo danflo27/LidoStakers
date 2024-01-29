@@ -19,7 +19,7 @@ for i in range(num_operators):
 
 print ("total_deposited_validators: " + str(total_deposited_validators))
 
-# get the  node operators' validators' deposit signatures
+# get node operators' validator's info
 list_of_validators = []
 for i in range(num_operators):
     operator_data = get_node_operator(etherscan_api_url, lido_curated_staking_address, API_KEY, i)
