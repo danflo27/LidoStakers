@@ -6,8 +6,8 @@ from config import API_KEY
 #-------------------------------------
 # eth validator index from beaconcha.in
 #-------------------------------------
-def get_index(api_url, key):
-    api_url = "https://beaconcha.in/api/v1/validator/" + str(key)
+def get_index(api_url, pub_key):
+    api_url = "https://beaconcha.in/api/v1/validator/" + str(pub_key)
     response = requests.get(api_url)
     if response.status_code == 200:
         data = response.json()
