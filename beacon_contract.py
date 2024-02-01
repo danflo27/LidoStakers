@@ -4,7 +4,7 @@ from config import API_KEY
 # import web3
 
 #-------------------------------------
-# eth validator index from beaconcha.in
+# useeth validator index from beaconcha.in
 #-------------------------------------
 def get_index(api_url, pub_key):
     api_url = "https://beaconcha.in/api/v1/validator/" + str(pub_key)
@@ -12,11 +12,24 @@ def get_index(api_url, pub_key):
     if response.status_code == 200:
         data = response.json()
         index = data['data']['validatorindex']
-        # print ("index: " + str(index))
+        print ("index: " + str(index))
         return index
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return None
+    
+def get_indices(api_url, pub_key_string):
+    api_url = "https://beaconcha.in/api/v1/validator/" + str(pub_key_string)
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        data = response.json()
+        validator_indices = [entry['validatorindex'] for entry in data['data']]
+        print ("validator indices: " + str(validator_indices))
+        return validator_indices
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return None
+
 
 
 #-------------------------------------

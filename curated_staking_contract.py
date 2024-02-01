@@ -23,7 +23,7 @@ def get_number_of_operators(api_url, contract_address, API_KEY):
     if response.status_code == 200:
         data = response.json()
         numberOfOperators = int(data['result'], 16)
-        print ("numberOfOperators: " + str(numberOfOperators))
+        print ("\nnumber of node operators: " + str(numberOfOperators) + "\n")
         return numberOfOperators
     else:
         print(f"Error: {response.status_code} - {response.text}")
