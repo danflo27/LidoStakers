@@ -1,2 +1,3 @@
 config.py
 pubkeys.txt
+*.csv

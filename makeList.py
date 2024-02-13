@@ -4,8 +4,8 @@ import csv
 import time
 
 lido_curated_staking_address = "0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5"
-etherscan_api_url = "https://api.etherscan.io/api"
-beaconchain_api_url = "https://beaconcha.in/api/v1/validator/"
+etherscan_api_url = "https://api.etherscan.io/api" #100k API calls per day, 5 per sec 
+beaconchain_api_url = "https://beaconcha.in/api/v1/validator/" # 5 calls per sec, 20 calls per min, 30k calls per month
 
 list_of_validators = []
 keys = []
@@ -22,21 +22,24 @@ for i in range(num_operators):
     total_deposited_validators += deposited_validators
     print ("total_deposited_validators: " + str(total_deposited_validators))
     print ()
-print("\n" * 5)
-print ("there are " + str(total_deposited_validators) + " validators to find." + "\n *5")
+print("\n" * 3)
+print ("there are " + str(total_deposited_validators) + " validators to find." + "\n" *5)
 
+start_operator = 0
+start_validator = 0
 # get the pub key for each validator and use that find their eth validator index
-for i in range(num_operators):
+for i in range(start_operator, num_operators):
     validators_per_operator = get_node_operator(etherscan_api_url, lido_curated_staking_address, API_KEY, i)[6]
-    for j in range(validators_per_operator):
+    for j in range(start_validator, validators_per_operator):
         deposit_signature, key, _index = get_signing_key(etherscan_api_url, lido_curated_staking_address, API_KEY, i, j)
         print ("validator " + str(j) + " / " + str(validators_per_operator) + "\nfor node operator " + str(i) + " / " + str(num_operators))
         print ("pubkey: " + str(key))
         print ()
         keys.append(key)
-        time.sleep(1)
+        # time.sleep(1)
         if len(keys) == 80:
             print ()
+            time.sleep(8)
             keys_string = ','.join(keys)
             indices = get_indices(beaconchain_api_url, keys_string)
             for index in indices:
@@ -46,7 +49,7 @@ for i in range(num_operators):
                 key_to_operator_validator[index] = {'node_operator_id': node_operator_id, 'validator_pubkey': key}  # store the mapping from index to node operator and pub key
                 print(f'key: {key}, node_operator_id: {node_operator_id}, validator_index: {validator_index}')
             keys = []
-            with open('output2.csv', 'w', newline='') as csvfile:
+            with open(f'operator_{i}.csv', 'w', newline='') as csvfile:       
                 fieldnames = ['validator_index', 'node_operator_id', 'validator_pubkey']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
